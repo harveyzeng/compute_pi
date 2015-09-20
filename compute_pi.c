@@ -81,6 +81,36 @@ double compute_pi_leibniz_avx(size_t n)
 
 	return pi * 4.0;
 }
+double compute_pi_euler(size_t n)
+{
+	double tmp = 0.0;
+	for(size_t i = 1 ; i < n ; i++){
+		tmp += 6 * ( 1 / pow(i,2) ); 
+	}
+	return sqrt(tmp);
+}
+
+double compute_pi_euler_avx(size_t n)
+{
+	double pi = 0.0;
+	register __m256d ymm0, ymm1, ymm2, ymm3;
+	ymm0 = _mm256_setzero_pd();
+        ymm1 = _mm256_set1_pd(1.0);
+        ymm2 = _mm256_set1_pd(6.0);
+
+        for (int i = 0; i <= n - 4; i += 4) {
+                ymm3 = _mm256_set_pd(i, i + 1.0, i + 2.0, i + 3.0);
+                ymm3 = _mm256_mul_pd(ymm3, ymm3);
+                ymm3 = _mm256_div_pd(ymm1, ymm3);
+                ymm3 = _mm256_mul_pd(ymm2, ymm3);
+                ymm0 = _mm256_add_pd(ymm0, ymm3);
+        }
+        double tmp[4] __attribute__((aligned(32)));
+        _mm256_store_pd(tmp, ymm0);
+        pi += tmp[0] + tmp[1] + tmp[2] + tmp[3];
+
+        return sqrt( pi );
+}
 
 // Calculate 95% confidence interval
 // store the interval [min, max] in the first two parameters
@@ -151,6 +181,19 @@ int main(int argc, char* argv[])
 			strcpy(method_name, "compute_pi_leibniz_avx");
 			strcpy(time_filename, "time_leibniz_avx.txt");
 			strcpy(error_filename, "error_leibniz_avx.txt");
+			break;
+		case 4:
+			compute_pi = &compute_pi_euler;
+			strcpy(method_name, "compute_pi_euler");
+			strcpy(time_filename, "time_euler.txt");
+			strcpy(error_filename, "error_euler.txt");
+			break;
+		case 5:
+			compute_pi = &compute_pi_euler_avx;
+			strcpy(method_name, "compute_pi_euler_avx");
+			strcpy(time_filename, "time_euler_avx.txt");
+			strcpy(error_filename, "error_euler_avx.txt");
+			break;
 		default:
 			break;
 	}
