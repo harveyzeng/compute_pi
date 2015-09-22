@@ -87,6 +87,7 @@ double compute_pi_euler(size_t n)
 	for(size_t i = 1 ; i < n ; i++){
 		tmp += 6 * ( 1 / pow(i,2) ); 
 	}
+	printf("sqrt(tmp)=%f\n",sqrt(tmp));
 	return sqrt(tmp);
 }
 
@@ -110,6 +111,18 @@ double compute_pi_euler_avx(size_t n)
         pi += tmp[0] + tmp[1] + tmp[2] + tmp[3];
 
         return sqrt( pi );
+}
+
+double compute_bailey(size_t n)
+{
+	double tmp = 0.0;
+	for(size_t i = 0 ; i < n ; i++){
+		tmp += ((double)(4.0/(8.0*i+1.0))-(double)(2.0/(8.0*i+4.0))-(double)(1.0/(8.0*i+5.0))-(double)(1.0/(8.0*i+6.0)))/pow(16,i);
+	}
+	printf("tmp=%f\n",tmp);
+	printf("M_PI=%f\n",M_PI);
+	//cout<<"tmp="<<tmp<<endl;
+	return tmp;
 }
 
 // Calculate 95% confidence interval
@@ -193,6 +206,12 @@ int main(int argc, char* argv[])
 			strcpy(method_name, "compute_pi_euler_avx");
 			strcpy(time_filename, "time_euler_avx.txt");
 			strcpy(error_filename, "error_euler_avx.txt");
+			break;
+		case 6:
+			compute_pi = &compute_bailey;
+			strcpy(method_name, "compute_bailey");
+			strcpy(time_filename, "time_compute_bailey.txt");
+			strcpy(error_filename, "error_compute_bailey.txt");
 			break;
 		default:
 			break;
